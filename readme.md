@@ -1,7 +1,3 @@
-Certainly! Below is a modern and stylish `README.md` for the `FFmpegWrapper` Python module with updated formatting, additional clarity, and enhanced aesthetics for an improved developer experience.
-
----
-
 # FFmpegWrapper Python Module
 
 ![FFmpegWrapper](https://img.shields.io/badge/FFmpegWrapper-Python-blue)  
@@ -237,13 +233,13 @@ The script should output success/failure messages, as well as the standard outpu
 
 ## 🤝 Contributing
 
-We welcome contributions! Here’s how you can help:
+Here’s how you can help:
 1. Fork the repo.
 2. Create a new branch.
 3. Implement your changes.
 4. Submit a pull request.
 
-I'll’ll review your PR and merge if it fits.
+I'll review your PR and merge if it fits.
 
 ---
 
