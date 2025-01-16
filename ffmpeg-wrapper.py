@@ -1,104 +1,100 @@
 import subprocess
 import os
-import logging
-import asyncio
-
-logging.basicConfig(level=logging.INFO)
 
 class FFmpegWrapper:
     def __init__(self, ffmpeg_path="ffmpeg"):
         # Ensure the given ffmpeg_path exists
-        if not os.path.exists(ffmpeg_path) and ffmpeg_path != "ffmpeg":
-            raise FileNotFoundError(f"FFmpeg binary not found at: {ffmpeg_path}")
+        if not os.path.exists(ffmpeg_path):
+            raise FileNotFoundError(f"ffmpeg binary not found at: {ffmpeg_path}")
         self.ffmpeg_path = ffmpeg_path
-
-    def test_ffmpeg(self):
-        """Check if the ffmpeg binary is accessible and working."""
-        try:
-            command = [self.ffmpeg_path, "-version"]
-            result = subprocess.run(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE, check=True, text=True)
-            logging.info(f"FFmpeg version detected: {result.stdout.splitlines()[0]}")
-            return True
-        except FileNotFoundError:
-            raise FileNotFoundError("FFmpeg binary not found. Ensure it is installed and accessible in PATH.")
-        except subprocess.CalledProcessError as e:
-            raise RuntimeError(f"FFmpeg test failed: {e.stderr.strip()}")
 
     def run_command(self, command):
         """Runs a command and returns stdout, stderr, returncode."""
         try:
             result = subprocess.run(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE, check=True, text=True)
-            logging.info("Command succeeded: %s", " ".join(command))
             return result.stdout, result.stderr, result.returncode
         except subprocess.CalledProcessError as e:
-            logging.error("Command failed: %s", " ".join(command))
-            logging.error("Error: %s", e.stderr)
-            raise RuntimeError(f"FFmpeg command failed: {e.stderr.strip()}") from e
-
-    def validate_file(self, file_path):
-        """Ensure the input file exists."""
-        if not os.path.isfile(file_path):
-            raise FileNotFoundError(f"Input file not found: {file_path}")
-
-    def validate_output_dir(self, file_path):
-        """Ensure the output directory is writable."""
-        output_dir = os.path.dirname(file_path) or "."
-        if not os.access(output_dir, os.W_OK):
-            raise PermissionError(f"Cannot write to directory: {output_dir}")
-
-    def extract_audio_for_whisper(self, input_file, output_audio_file):
-        """Extract audio in a Whisper-compatible format."""
-        self.validate_file(input_file)
-        self.validate_output_dir(output_audio_file)
-        
+            return e.stdout, e.stderr, e.returncode
+    
+    def convert_video(self, input_file, output_file, codec="libx264", crf=23, audio_codec="aac", audio_bitrate="192k"):
+        """Convert a video file to a different format."""
         command = [
             self.ffmpeg_path, "-i", input_file,
-            "-ac", "1", "-ar", "16000", "-c:a", "pcm_s16le",
+            "-c:v", codec, "-crf", str(crf),
+            "-c:a", audio_codec, "-b:a", audio_bitrate,
+            output_file
+        ]
+        return self.run_command(command)
+
+    def extract_audio(self, input_file, output_audio_file, audio_codec="aac", audio_bitrate="192k"):
+        """Extract audio from a video file."""
+        command = [
+            self.ffmpeg_path, "-i", input_file,
+            "-vn", "-c:a", audio_codec, "-b:a", audio_bitrate,
             output_audio_file
         ]
-        stdout, stderr, returncode = self.run_command(command)
-        if returncode == 0:
-            return output_audio_file
-        else:
-            raise RuntimeError(f"Failed to extract audio: {stderr}")
+        return self.run_command(command)
+    
+    def get_video_info(self, input_file):
+        """Get detailed information about a video file."""
+        command = [
+            self.ffmpeg_path, "-i", input_file,
+            "-v", "quiet", "-print_format", "json", "-show_format", "-show_streams"
+        ]
+        return self.run_command(command)
+    
+    def trim_video(self, input_file, output_file, start_time, duration):
+        """Trim a video from the start time for the given duration."""
+        command = [
+            self.ffmpeg_path, "-i", input_file,
+            "-ss", start_time, "-t", duration,
+            "-c", "copy", output_file
+        ]
+        return self.run_command(command)
 
-    async def run_async_command(self, command):
-        """Run a command asynchronously."""
-        process = await asyncio.create_subprocess_exec(
-            *command,
-            stdout=asyncio.subprocess.PIPE,
-            stderr=asyncio.subprocess.PIPE
-        )
-        stdout, stderr = await process.communicate()
-        return stdout.decode(), stderr.decode(), process.returncode
+    def change_video_resolution(self, input_file, output_file, resolution="1280x720"):
+        """Change the resolution of the video."""
+        command = [
+            self.ffmpeg_path, "-i", input_file,
+            "-s", resolution, "-c:v", "libx264", "-c:a", "aac",
+            output_file
+        ]
+        return self.run_command(command)
 
-    async def batch_extract_audio(self, input_files, output_dir):
-        """Extract audio for multiple files asynchronously."""
-        tasks = []
-        for input_file in input_files:
-            output_audio_file = os.path.join(output_dir, os.path.splitext(os.path.basename(input_file))[0] + ".wav")
-            self.validate_file(input_file)
-            self.validate_output_dir(output_audio_file)
-            
-            command = [
-                self.ffmpeg_path, "-i", input_file,
-                "-ac", "1", "-ar", "16000", "-c:a", "pcm_s16le",
-                output_audio_file
-            ]
-            tasks.append(self.run_async_command(command))
-        return await asyncio.gather(*tasks)
+    def add_watermark(self, input_file, output_file, watermark_image, position="top-left"):
+        """Add a watermark to a video."""
+        command = [
+            self.ffmpeg_path, "-i", input_file,
+            "-i", watermark_image, "-filter_complex", f"overlay={position}",
+            output_file
+        ]
+        return self.run_command(command)
 
 
 # Example Usage
 if __name__ == "__main__":
-    try:
-        ffmpeg = FFmpegWrapper(ffmpeg_path="ffmpeg")  # Adjust path if necessary
-        if ffmpeg.test_ffmpeg():
-            print("FFmpeg is correctly configured and working.")
+    ffmpeg = FFmpegWrapper(ffmpeg_path="/usr/local/bin/ffmpeg")  # or "ffmpeg" if in PATH
 
-        # Extract audio for Whisper
-        output_file = ffmpeg.extract_audio_for_whisper("input.mp4", "output.wav")
-        print(f"Audio extracted to: {output_file}")
-        
-    except Exception as e:
-        print(f"Error: {e}")
+    # Convert video
+    stdout, stderr, returncode = ffmpeg.convert_video("input.mp4", "output.mkv")
+    print(stdout, stderr, returncode)
+
+    # Extract audio from video
+    stdout, stderr, returncode = ffmpeg.extract_audio("input.mp4", "output_audio.mp3")
+    print(stdout, stderr, returncode)
+
+    # Get video info
+    stdout, stderr, returncode = ffmpeg.get_video_info("input.mp4")
+    print(stdout, stderr, returncode)
+
+    # Trim video
+    stdout, stderr, returncode = ffmpeg.trim_video("input.mp4", "trimmed_output.mp4", "00:01:00", "00:00:30")
+    print(stdout, stderr, returncode)
+
+    # Change video resolution
+    stdout, stderr, returncode = ffmpeg.change_video_resolution("input.mp4", "output_resized.mp4", "640x360")
+    print(stdout, stderr, returncode)
+
+    # Add watermark to video
+    stdout, stderr, returncode = ffmpeg.add_watermark("input.mp4", "output_with_watermark.mp4", "watermark.png", "10:10")
+    print(stdout, stderr, returncode)
