@@ -5,11 +5,15 @@ import py7zr
 from pathlib import Path
 
 class FFmpegWrapper:
+    
 
     #if the repo is cloned as is, it will have a zipped file .7z containing the ffmpeg local libs, we need to extract them first.
     #I am using py7zr for this purpose. 
 
     def __init__(self, ffmpeg_zipped_file_path):
+        # defining self.ffmpeg_path as an empty variable. It will house the ffmpeg path later 
+        self.ffmpeg_path = ''
+
          # Step 1 : Make sure the ffmpeg-essential.7z file is in project dir
         if not os.path.exists(ffmpeg_zipped_file_path):
             raise FileNotFoundError(f"Unable to find ffmpeg (zipped -7z) locally at: {ffmpeg_zipped_file_path}.")
@@ -44,8 +48,31 @@ class FFmpegWrapper:
             print ("Files have been extracted.")
 
     #FFMPEG.exe check
-    def check_ffmpeg_exe(self, path_to_ffmpeg_dir)
-        if not 
+    def ffmpeg_exe_checker(self):
+        #performing some path manuplation to get an absolute path to the bins. 
+        ffmpeg_path = os.path.join(os.getcwd(), 'ffmpeg-essential','ffmpeg-essential', 'bin', 'ffmpeg.exe')
+        if not os.path.exists(ffmpeg_path) and ffmpeg_path != "ffmpeg-essential/bin/ffmpeg.exe":
+            raise FileNotFoundError(f"FFmpeg binary not found at: {ffmpeg_path}")
+        else:
+            print ("FFMPEG bins found, good to go.")
+            self.ffmpeg_path = ffmpeg_path
+
+
+    def test_ffmpeg(self):
+        """Check if that ffmpeg binary is accessible and working."""
+        print ("testing ffmpeg by running the version command.")
+        try:
+            command = [self.ffmpeg_path, "-version"]
+            result = subprocess.run(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE, check=True, text=True)
+            print ("Success!")
+            print(f"FFmpeg version detected: {result.stdout.splitlines()[0]}")
+            return True
+        except FileNotFoundError:
+            raise FileNotFoundError("FFmpeg binary not found. Ensure it is installed and accessible in PATH.")
+        except subprocess.CalledProcessError as e:
+            raise RuntimeError(f"FFmpeg test failed: {e.stderr.strip()}")
+
+
     def run_command(self, command):
         """Runs a command and returns stdout, stderr, returncode."""
         try:
@@ -129,7 +156,10 @@ if __name__ == "__main__":
         ffmpeg.extract_ffmpeg(ffmpeg_zipped_file_path, output_dir)
 
         #Extraction complete! Now, checking if we are able to access ffmpeg.exe
+        ffmpeg.ffmpeg_exe_checker()
 
+        print(f"this will now act as the path for ffempg : {ffmpeg.ffmpeg_path}")
+        ffmpeg.test_ffmpeg()
 
     except Exception as e:
         print (f"Hitting an exception : {e}")
