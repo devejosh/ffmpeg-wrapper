@@ -1,12 +1,34 @@
+# Imports 
 import subprocess
 import os
+import py7zr
 
 class FFmpegWrapper:
-    def __init__(self, ffmpeg_path="ffmpeg"):
-        # Ensure the given ffmpeg_path exists
-        if not os.path.exists(ffmpeg_path):
-            raise FileNotFoundError(f"ffmpeg binary not found at: {ffmpeg_path}")
-        self.ffmpeg_path = ffmpeg_path
+
+    #if the repo is cloned as is, it will have a zipped file .7z containing the ffmpeg local libs, we need to extract them first.
+    #I am using py7zr for this purpose. 
+
+    def __init__(self, ffmpeg_zipped_file_path):
+         # Step 1 : Make sure the ffmpeg-essential.7z file is in project dir
+        if not os.path.exists(ffmpeg_zipped_file_path):
+            raise FileNotFoundError(f"Unable to find ffmpeg (zipped -7z) locally at: {ffmpeg_zipped_file_path}.")
+            print ("what to do : Check your project directory and make sure ffmpeg-essential.7z is present.")
+        
+        else:
+            print ("FFMPEG local 7z archive found. beginning extraction")
+            #Now that its ensured we have local archive of ffmpeg bins present, begin extraction of the files into the project dir
+
+    
+    #method definition for using py7zr to extract the ffmpeg-archive
+    def extract_ffmpeg(self, ffmpeg_zipped_file_path, output_dir):
+        #first, check if ./ffmpeg-essential (dir) exists, if not, create one. 
+        if not os.path.exists(output_dir):
+            print ("directory /ffmpeg-essential does not exist. creating it.")
+            #create the directory. 
+            os.makedirs(output_dir)
+            input("Directory created")
+
+
 
     def run_command(self, command):
         """Runs a command and returns stdout, stderr, returncode."""
@@ -73,28 +95,20 @@ class FFmpegWrapper:
 
 # Example Usage
 if __name__ == "__main__":
-    ffmpeg = FFmpegWrapper(ffmpeg_path="/usr/local/bin/ffmpeg")  # or "ffmpeg" if in PATH
+    # Added the static path to the local ffmpeg-bins. please do not change it 
+    # Note : This is a static path to FFMPEG, the wrapper was specifically made to work with local ffmpeg bins without the need to install ffmpeg globally. 
+    ffmpeg_zipped_file_path="./ffmpeg-essential.7z"
 
-    # Convert video
-    stdout, stderr, returncode = ffmpeg.convert_video("input.mp4", "output.mkv")
-    print(stdout, stderr, returncode)
+    #Class initialized.
+    ffmpeg = FFmpegWrapper(ffmpeg_zipped_file_path)
+    
 
-    # Extract audio from video
-    stdout, stderr, returncode = ffmpeg.extract_audio("input.mp4", "output_audio.mp3")
-    print(stdout, stderr, returncode)
+    #We checked and found the 7z file, good, lets set the output directory to tell py7zr where to extract the files. 
+    output_dir='./ffmpeg-essential'
 
-    # Get video info
-    stdout, stderr, returncode = ffmpeg.get_video_info("input.mp4")
-    print(stdout, stderr, returncode)
-
-    # Trim video
-    stdout, stderr, returncode = ffmpeg.trim_video("input.mp4", "trimmed_output.mp4", "00:01:00", "00:00:30")
-    print(stdout, stderr, returncode)
-
-    # Change video resolution
-    stdout, stderr, returncode = ffmpeg.change_video_resolution("input.mp4", "output_resized.mp4", "640x360")
-    print(stdout, stderr, returncode)
-
-    # Add watermark to video
-    stdout, stderr, returncode = ffmpeg.add_watermark("input.mp4", "output_with_watermark.mp4", "watermark.png", "10:10")
-    print(stdout, stderr, returncode)
+    #Now, execute the extract_ffmpeg function
+    try:
+        ffmpeg.extract_ffmpeg(ffmpeg_zipped_file_path, output_dir)
+        input ("directory created, waiting to proceed further")
+    except Exception as e:
+        print (f"Hitting an exception : {e}")
