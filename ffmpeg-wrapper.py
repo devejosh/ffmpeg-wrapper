@@ -41,9 +41,11 @@ class FFmpegWrapper:
         # Open the .7z file in read mode and extract
         with py7zr.SevenZipFile(ffmpeg_zipped_file_path, mode='r') as z:
             z.extractall(path=output_dir)  # Extract all files to the output directory
+            print ("Files have been extracted.")
 
-
-
+    #FFMPEG.exe check
+    def check_ffmpeg_exe(self, path_to_ffmpeg_dir)
+        if not 
     def run_command(self, command):
         """Runs a command and returns stdout, stderr, returncode."""
         try:
@@ -125,6 +127,9 @@ if __name__ == "__main__":
 
         #directory check complete, performing extraction
         ffmpeg.extract_ffmpeg(ffmpeg_zipped_file_path, output_dir)
+
+        #Extraction complete! Now, checking if we are able to access ffmpeg.exe
+
 
     except Exception as e:
         print (f"Hitting an exception : {e}")
