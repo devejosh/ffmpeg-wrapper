@@ -2,6 +2,7 @@
 import subprocess
 import os
 import py7zr
+from pathlib import Path
 
 class FFmpegWrapper:
 
@@ -15,18 +16,31 @@ class FFmpegWrapper:
             print ("what to do : Check your project directory and make sure ffmpeg-essential.7z is present.")
         
         else:
-            print ("FFMPEG local 7z archive found. beginning extraction")
+            print ("FFMPEG local 7z archive found.")
             #Now that its ensured we have local archive of ffmpeg bins present, begin extraction of the files into the project dir
 
     
     #method definition for using py7zr to extract the ffmpeg-archive
-    def extract_ffmpeg(self, ffmpeg_zipped_file_path, output_dir):
+    def ffmpeg_dir_check (self, ffmpeg_zipped_file_path, output_dir):
         #first, check if ./ffmpeg-essential (dir) exists, if not, create one. 
         if not os.path.exists(output_dir):
             print ("directory /ffmpeg-essential does not exist. creating it.")
             #create the directory. 
             os.makedirs(output_dir)
-            input("Directory created")
+            input("Directory created, ready to extract files")
+        else:
+            print("Directory already exists, checking if the directory is empty")
+            if not any (Path(output_dir).iterdir()):
+                print ("Directory is empty, ready to extract files")
+            else:
+                print ("Directory is not empty, the files would have to be overwritten")
+
+
+    # FFMPEG EXTRACTOR CORE 
+    def extract_ffmpeg(self, ffmpeg_zipped_file_path, output_dir):
+        # Open the .7z file in read mode and extract
+        with py7zr.SevenZipFile(ffmpeg_zipped_file_path, mode='r') as z:
+            z.extractall(path=output_dir)  # Extract all files to the output directory
 
 
 
@@ -101,14 +115,16 @@ if __name__ == "__main__":
 
     #Class initialized.
     ffmpeg = FFmpegWrapper(ffmpeg_zipped_file_path)
-    
-
     #We checked and found the 7z file, good, lets set the output directory to tell py7zr where to extract the files. 
+    
+    print ("Checking if output dir - ./ffmpeg-wrapper exists, if it does, is it empty?")
     output_dir='./ffmpeg-essential'
-
-    #Now, execute the extract_ffmpeg function
     try:
+        ffmpeg.ffmpeg_dir_check(ffmpeg_zipped_file_path, output_dir)
+        input ("directory check passed : waiting to proceed further")
+
+        #directory check complete, performing extraction
         ffmpeg.extract_ffmpeg(ffmpeg_zipped_file_path, output_dir)
-        input ("directory created, waiting to proceed further")
+
     except Exception as e:
         print (f"Hitting an exception : {e}")
