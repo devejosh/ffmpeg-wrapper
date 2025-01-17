@@ -10,6 +10,8 @@
 - Created `FFmpegWrapper` class to manage FFmpeg operations.
 - Implemented `.7z` archive extraction for FFmpeg binaries.
 - Added user prompt after FFmpeg extraction to confirm directory creation.
+- implemented extraction.
 
 ### Fixed
 - Resolved minor issue where non-existent file paths would not raise a `FileNotFoundError`.
+- simplified cli prompts to streamline user inteaction. 
