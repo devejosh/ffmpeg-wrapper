@@ -6,9 +6,9 @@ import asyncio
 logging.basicConfig(level=logging.INFO)
 
 class FFmpegWrapper:
-    def __init__(self, ffmpeg_path="ffmpeg"):
+    def __init__(self, ffmpeg_path):
         # Ensure the given ffmpeg_path exists
-        if not os.path.exists(ffmpeg_path) and ffmpeg_path != "ffmpeg":
+        if not os.path.exists(ffmpeg_path) and ffmpeg_path != "ffmpeg-essential/bin/ffmpeg.exe":
             raise FileNotFoundError(f"FFmpeg binary not found at: {ffmpeg_path}")
         self.ffmpeg_path = ffmpeg_path
 
@@ -92,13 +92,13 @@ class FFmpegWrapper:
 # Example Usage
 if __name__ == "__main__":
     try:
-        ffmpeg = FFmpegWrapper(ffmpeg_path="ffmpeg")  # Adjust path if necessary
+        ffmpeg = FFmpegWrapper(ffmpeg_path="ffmpeg-essential/bin/ffmpeg.exe")  # Adjust path if necessary
         if ffmpeg.test_ffmpeg():
-            print("FFmpeg is correctly configured and working.")
-
-        # Extract audio for Whisper
-        output_file = ffmpeg.extract_audio_for_whisper("input.mp4", "output.wav")
-        print(f"Audio extracted to: {output_file}")
+            # Once we have checked that the wrapper is able to access the local ffmpeg bins, we will wait for them to input a message to proceed further. 
+            input ("FFMPEG local bianries in place : we can proceed further, please press enter")    
+            # Extract audio for Whisper
+            output_file = ffmpeg.extract_audio_for_whisper("input.mp4", "output.wav")
+            print(f"Audio extracted to: {output_file}")
         
     except Exception as e:
         print(f"Error: {e}")
