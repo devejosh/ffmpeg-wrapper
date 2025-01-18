@@ -108,3 +108,28 @@ Thank you for providing both the initial and final versions of the file. Based o
 - **Removed:** 
   - Broken or incomplete methods (`check_ffmpeg_exe`).
   
+Here is a **Changelog** to represent the changes made to the original code:
+
+---
+
+
+### [1.1.0] - 2025-01-18/1
+#### Added:
+- **Logging Framework**: Replaced `print` statements with Python's built-in `logging` module for better flexibility and maintainability. Logging levels (`INFO`, `ERROR`, etc.) are now used for feedback.
+- **Type Annotations**: Added type hints to function signatures for better clarity and improved code readability.
+- **Async Command Handling**: Updated `run_async_command` and `batch_extract_audio` methods to use `asyncio.create_subprocess_exec` for non-blocking execution when running commands asynchronously.
+
+#### Changed:
+- **Fixed Typo in Directory Check**: Corrected `self.self.output_dir` to `self.output_dir` in the `ffmpeg_dir_check` method.
+- **Refactored Directory Creation Logic**: Simplified and clarified the directory check and creation logic in the `ffmpeg_dir_check` method.
+- **Removed Blocking `input()` Calls**: Removed unnecessary `input()` calls that paused execution in production code, making it more suitable for automated or headless environments.
+- **Refined Error Handling**: Improved error handling to provide more specific and meaningful error messages.
+- **Replaced Hardcoded File Paths**: Corrected hardcoded paths to dynamically use the class instance's `output_dir` property and the provided `ffmpeg_zipped_file_path`.
+  
+#### Fixed:
+- **Fixed `validate_output_dir` Method**: Corrected a typo where `validate_self.output_dir` was incorrectly used instead of `validate_output_dir`.
+- **Fixed Path Calculation**: Updated the `ffmpeg_exe_checker` method to dynamically calculate the correct path for `ffmpeg.exe`, ensuring it works across various setups.
+  
+#### Removed:
+- **Deprecated `input()` Pause Calls**: Removed `input()` calls used for pausing execution during directory creation and extraction.
+
