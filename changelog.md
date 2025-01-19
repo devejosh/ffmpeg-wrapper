@@ -1,7 +1,7 @@
 # Changelog
 
 ## [Unreleased]
-## [1.1.0] - 2025-01-19
+## [1.1.0] - 2025-01-19/1
 ### Added
 - **File Hash Validation for Extraction**: Implemented file hash validation to ensure that previously extracted FFmpeg files are not re-extracted if they have not changed. This prevents unnecessary re-extraction and speeds up the process.
 - **File Integrity Check**: Added functionality to compare the MD5 hash of extracted files against expected hashes before deciding to extract files.
