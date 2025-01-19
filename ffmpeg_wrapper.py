@@ -1,12 +1,5 @@
-import subprocess
-import os
-import py7zr
-from pathlib import Path
-import logging
 import asyncio
 
-# Set up logging configuration
-logging.basicConfig(level=logging.INFO)
 
 class FFmpegWrapper:
     def __init__(self, ffmpeg_zipped_file_path: str):
