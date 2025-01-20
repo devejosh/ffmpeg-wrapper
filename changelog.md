@@ -1,5 +1,17 @@
 # Changelog
 
+
+## Version 1.2.0 - 20/01/2025/1
+
+- Separated the code for installing and checking FFmpeg binaries into two distinct classes: `ffmpeg_setup` and `ffmpeg_check`.
+- Renamed the core FFmpeg module to `wrapper_core`.
+- `ffmpeg_check` now imports `ffmpeg_setup` and handles the setup of local FFmpeg binaries.
+- FFmpeg setup now also sets the path to the FFmpeg binary and stores it in `.config/final_path.txt`.
+- After setup is completed, the final FFmpeg path is imported into `wrapper_core` through the `.config/final_path.txt` file.
+- All related changes were made in a new branch: `dev`.
+
+
+
 ## [Unreleased]
 ## [1.1.0] - 2025-01-19/1
 ### Added
