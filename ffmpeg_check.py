@@ -1,4 +1,3 @@
-import os
 import py7zr
 from pathlib import Path
 import logging
@@ -112,24 +111,6 @@ class FFmpegCheck:
 
 if __name__ == "__main__":
     # Ensure this is the correct path to the FFmpeg archive
-    ffmpeg_zipped_file_path = "./ffmpeg-essential.7z"
     ffmpeg = FFmpegCheck(ffmpeg_zipped_file_path)
-
     logging.info("Checking if output dir './ffmpeg-essential' exists, and if it is empty.")
-    try:
-        ffmpeg.ffmpeg_dir_check()
-        logging.info("Directory check passed, ready to extract.")
-
-        # Perform extraction
-        ffmpeg.extract_ffmpeg()
-
-        # Check if ffmpeg.exe is accessible
-        ffmpeg.ffmpeg_exe_checker()
-
-        logging.info(f"FFmpeg path set to: {ffmpeg.ffmpeg_path}")
-
-        # Test FFmpeg
-        ffmpeg.test_ffmpeg()
-
-    except Exception as e:
-        logging.error(f"An exception occurred: {e}")
+   
